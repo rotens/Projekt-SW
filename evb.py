@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
+import os
 import socket
+import sys
 import tkinter as tk
 
 HOST = '127.0.0.1'
@@ -22,9 +24,10 @@ MAIN_PADY = 10
 BUTTON_SIZE = 1
 
 class Evb(tk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, sock):
         super().__init__(master)
         self.master = master
+        self.sock = sock
         self.pack()
 
         self.lb_screen = tk.Label(master=self, text="LCD HD44780")
@@ -64,7 +67,7 @@ class Evb(tk.Frame):
         self.lb_potentiometer = tk.Label(master=self, text="ADC potentiometer", pady=10)
         self.lb_potentiometer.grid(row=4, columnspan=DIODES_NUM)
         self.potentiometer = tk.Scale(master=self, from_=0, to=100, 
-        orient=tk.HORIZONTAL, length=POTENTIOMETER_LENGTH, tickinterval=20)
+            orient=tk.HORIZONTAL, length=POTENTIOMETER_LENGTH, tickinterval=20)
         self.potentiometer.bind("<Button-1>", self.callback)
         self.potentiometer.grid(row=5, columnspan=DIODES_NUM)
 
@@ -77,9 +80,25 @@ class Evb(tk.Frame):
             self.buttons[i]["width"] = BUTTON_SIZE
             self.buttons[i]["height"] = BUTTON_SIZE
             self.buttons[i].grid(row=7, column=i, padx=MAIN_PADY)
+            self.buttons[i]["command"] = lambda x=i: self._shortcut_buttons(x)
+        
+        try:
+            self.sock.connect((HOST, PORT))
+        except Exception:
+            sys.exit(1)
+            
+        #self.after(100, self.loop)
         
     def callback(self, event):
         print("Test")
+
+    def _shortcut_buttons(self, btn_num):
+        btn_num = str(btn_num).encode("utf-8")
+        self.sock.sendall(b'1')
+        self.sock.sendall(btn_num)
+
+    def loop(self):
+        pass
                         
 
 # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -92,7 +111,8 @@ class Evb(tk.Frame):
 def main():
     root = tk.Tk()
     root.title("EvB 5.1 v5 emulator")
-    Evb(root).mainloop()
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        Evb(root, s).mainloop()
 
 if __name__ == "__main__":
     main() 
