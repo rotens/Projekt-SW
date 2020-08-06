@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#-*- coding: utf-8 -*-
 
 import os
 import socket
@@ -68,7 +69,7 @@ class Evb(tk.Frame):
         self.lb_potentiometer.grid(row=4, columnspan=DIODES_NUM)
         self.potentiometer = tk.Scale(master=self, from_=0, to=100, 
             orient=tk.HORIZONTAL, length=POTENTIOMETER_LENGTH, tickinterval=20)
-        self.potentiometer.bind("<Button-1>", self.callback)
+        self.potentiometer["command"] = lambda x: self._potentiometer()
         self.potentiometer.grid(row=5, columnspan=DIODES_NUM)
 
         self.lb_buttons = tk.Label(master=self, text="Shortcuts")
@@ -87,18 +88,34 @@ class Evb(tk.Frame):
         except Exception:
             sys.exit(1)
             
-        #self.after(100, self.loop)
+        self.after(1000, self._loop)
         
-    def callback(self, event):
-        print("Test")
+    def _potentiometer(self):
+        value = str(self.potentiometer.get())
+        self.sock.sendall(b'2')
+        self.sock.sendall(str(len(value)).encode("utf-8"))
+        self.sock.sendall(value.encode("utf-8"))
 
     def _shortcut_buttons(self, btn_num):
         btn_num = str(btn_num).encode("utf-8")
         self.sock.sendall(b'1')
         self.sock.sendall(btn_num)
 
-    def loop(self):
-        pass
+    def _diodes(self):
+        self.sock.sendall(b'3')
+        header = int(self.sock.recv(1))
+        value = int(self.sock.recv(header))
+
+        diodes_on = int(value * 0.08)
+        for i in range(diodes_on):
+            self.diodes[i]["bg"] = DIODE_ON_COLOR
+        for i in range(diodes_on, 8):
+            self.diodes[i]["bg"] = DIODE_OFF_COLOR
+        
+
+    def _loop(self):
+        self._diodes()
+        self.after(1000, self._loop)
                         
 
 # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
