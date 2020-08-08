@@ -10,8 +10,11 @@ import sys
 HOST = '127.0.0.1'
 PORT = 9999
 
-MIXER = "amixer -D pulse sset Master {}%"
-VOLUME_LEVEL = "amixer -D pulse get Master | awk -F 'Left:|[][]' 'BEGIN {RS=\"\"}{ print $3 }'"
+SET_VOLUME_LEVEL = "amixer -D pulse sset Master {}%"
+GET_VOLUME_LEVEL = ("amixer -D pulse get Master "
+    "| awk -F 'Left:|[][]' 'BEGIN {RS=\"\"}{ print $3 }'")
+GET_CPU_USAGE = ("top -b -n2 | grep \"Cpu(s)\" " 
+    "| awk '{print $2+$4 \"%\"}' | tail -n1")
 
 
 class Host(object):
@@ -47,18 +50,27 @@ class Host(object):
             while True:
                 header = conn.recv(1)
                 header = header.decode()
-                print("Header: {}".format(header))
+                #print("Header: {}".format(header))
 
                 if header == '1':
                     data = conn.recv(1)
                     self._shortcut_buttons(data)
+
                 elif header == '2':
                     msg_len = int(conn.recv(1))
                     data = conn.recv(msg_len)
                     self._adjust_volume_level(data)
+
                 elif header == '3':
                     data = self._get_volume_level()
-                    print("Dane: {}".format(data))
+                    #print("Dane: {}".format(data))
+                    msg_len = str(len(data))
+                    conn.sendall(msg_len.encode("utf-8"))
+                    conn.sendall(data)
+
+                elif header == '4':
+                    data = self._get_cpu_usage()
+                    #print("Dane: {}".format(data))
                     msg_len = str(len(data))
                     conn.sendall(msg_len.encode("utf-8"))
                     conn.sendall(data)
@@ -69,20 +81,28 @@ class Host(object):
     def _shortcut_buttons(self, data):
         data = int(data)
         try:
-            os.system(Host.commands[data])
+            subprocess.call(Host.commands[data], shell=True)
         except KeyError:
             pass
 
     def _adjust_volume_level(self, data):
         print("Volume level {}".format(data.decode()))
-        os.system(MIXER.format(data.decode()))
+        #os.system(SET_VOLUME_LEVEL.format(data.decode()))
+        subprocess.call(SET_VOLUME_LEVEL.format(data.decode()), shell=True)
 
     def _get_volume_level(self):
         pipe = subprocess.Popen(
-            VOLUME_LEVEL, shell=True, stdout=subprocess.PIPE).stdout
+            GET_VOLUME_LEVEL, shell=True, stdout=subprocess.PIPE).stdout
         value = pipe.read()
         value = value.strip()
         value = value[:len(value)-1]
+        return value
+
+    def _get_cpu_usage(self):
+        pipe = subprocess.Popen(
+            GET_CPU_USAGE, shell=True, stdout=subprocess.PIPE).stdout
+        value = pipe.read()
+        value = value.strip()
         return value
 
 

@@ -42,13 +42,13 @@ class Evb(tk.Frame):
         self.screen.rowconfigure(0, weight=1)
 
         self.lb_memory = tk.Label(
-            master=self.screen, text="MEM: 100", font=("", SCREEN_FONT_SIZE),
+            master=self.screen, text="MEM: ", font=("", SCREEN_FONT_SIZE),
             bg=SCREEN_COLOR, fg=SCREEN_TEXT_COLOR)
         self.lb_cpu = tk.Label(
-            master=self.screen, text="CPU: 100", font=("", SCREEN_FONT_SIZE),
+            master=self.screen, text="CPU: ", font=("", SCREEN_FONT_SIZE),
             bg=SCREEN_COLOR, fg=SCREEN_TEXT_COLOR)
         self.lb_temperature = tk.Label(
-            master=self.screen, text="TEMP: 100", font=("", SCREEN_FONT_SIZE),
+            master=self.screen, text="TEMP: ", font=("", SCREEN_FONT_SIZE),
             bg=SCREEN_COLOR, fg=SCREEN_TEXT_COLOR)
         self.lb_memory.grid(row=0, column=0)
         self.lb_cpu.grid(row=0, column=1)
@@ -88,7 +88,7 @@ class Evb(tk.Frame):
         except Exception:
             sys.exit(1)
             
-        self.after(1000, self._loop)
+        self.after(100, self._loop)
         
     def _potentiometer(self):
         value = str(self.potentiometer.get())
@@ -106,24 +106,30 @@ class Evb(tk.Frame):
         header = int(self.sock.recv(1))
         value = int(self.sock.recv(header))
 
-        diodes_on = int(value * 0.08)
+        diodes_on = int(value * DIODES_NUM / 100)
         for i in range(diodes_on):
             self.diodes[i]["bg"] = DIODE_ON_COLOR
         for i in range(diodes_on, 8):
             self.diodes[i]["bg"] = DIODE_OFF_COLOR
-        
 
+    def _cpu(self):
+        self.sock.sendall(b'4')
+        header = int(self.sock.recv(1))
+        value = self.sock.recv(header).decode()
+
+        self.lb_cpu["text"] = "CPU: {}".format(value)
+        
+    def _memory(self):
+        pass
+
+    def _temperature(self):
+        pass
+        
     def _loop(self):
         self._diodes()
-        self.after(1000, self._loop)
-                        
+        self._cpu()
+        self.after(100, self._loop)
 
-# with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-#     s.connect((HOST, PORT))
-#     s.sendall(b'Hello, world')
-#     data = s.recv(1024)
-
-# print('Received', repr(data))
 
 def main():
     root = tk.Tk()
