@@ -13,8 +13,12 @@ PORT = 9999
 SET_VOLUME_LEVEL = "amixer -D pulse sset Master {}%"
 GET_VOLUME_LEVEL = ("amixer -D pulse get Master "
     "| awk -F 'Left:|[][]' 'BEGIN {RS=\"\"}{ print $3 }'")
-GET_CPU_USAGE = ("top -b -n2 | grep \"Cpu(s)\" " 
-    "| awk '{print $2+$4 \"%\"}' | tail -n1")
+# GET_CPU_USAGE = ("top -b -n2 | grep \"Cpu(s)\" " 
+#     "| awk '{print $2+$4 \"%\"}' | tail -n1")
+
+GET_CPU_USAGE = ("grep 'cpu ' /proc/stat "
+    "| awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage \"%\"}'")
+GET_MEMORY_USAGE = "free | grep Mem | awk '{print $3/$2*100}'"
 
 
 class Host(object):
@@ -43,6 +47,8 @@ class Host(object):
 
         self.sock.listen()
         conn, addr = self.sock.accept()
+
+        subprocess.call(SET_VOLUME_LEVEL.format(0), shell=True)
 
         with conn:
             print("Connected by {}".format(addr))
@@ -75,6 +81,13 @@ class Host(object):
                     conn.sendall(msg_len.encode("utf-8"))
                     conn.sendall(data)
 
+                elif header == '5':
+                    data = self._get_memory_usage()
+                    #print("Dane: {}".format(data))
+                    msg_len = str(len(data))
+                    conn.sendall(msg_len.encode("utf-8"))
+                    conn.sendall(data)
+
                 if not header:
                     break
 
@@ -86,8 +99,7 @@ class Host(object):
             pass
 
     def _adjust_volume_level(self, data):
-        print("Volume level {}".format(data.decode()))
-        #os.system(SET_VOLUME_LEVEL.format(data.decode()))
+        #print("Volume level {}".format(data.decode()))
         subprocess.call(SET_VOLUME_LEVEL.format(data.decode()), shell=True)
 
     def _get_volume_level(self):
@@ -102,7 +114,14 @@ class Host(object):
         pipe = subprocess.Popen(
             GET_CPU_USAGE, shell=True, stdout=subprocess.PIPE).stdout
         value = pipe.read()
-        value = value.strip()
+        value = value.strip()[:5]
+        return value
+
+    def _get_memory_usage(self):
+        pipe = subprocess.Popen(
+            GET_MEMORY_USAGE, shell=True, stdout=subprocess.PIPE).stdout
+        value = pipe.read()
+        value = value.strip()[:5]
         return value
 
 

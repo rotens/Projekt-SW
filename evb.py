@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 #-*- coding: utf-8 -*-
 
-import os
 import socket
 import sys
 import tkinter as tk
@@ -23,6 +22,7 @@ DIODES_NUM = 8
 BUTTONS_NUM = 8
 MAIN_PADY = 10
 BUTTON_SIZE = 1
+DELAY_MS = 1000
 
 class Evb(tk.Frame):
     def __init__(self, master, sock):
@@ -88,7 +88,7 @@ class Evb(tk.Frame):
         except Exception:
             sys.exit(1)
             
-        self.after(100, self._loop)
+        self.after(DELAY_MS, self._loop)
         
     def _potentiometer(self):
         value = str(self.potentiometer.get())
@@ -117,10 +117,14 @@ class Evb(tk.Frame):
         header = int(self.sock.recv(1))
         value = self.sock.recv(header).decode()
 
-        self.lb_cpu["text"] = "CPU: {}".format(value)
+        self.lb_cpu["text"] = "CPU: {}%".format(value)
         
     def _memory(self):
-        pass
+        self.sock.sendall(b'5')
+        header = int(self.sock.recv(1))
+        value = self.sock.recv(header).decode()
+
+        self.lb_memory["text"] = "MEM: {}%".format(value)
 
     def _temperature(self):
         pass
@@ -128,7 +132,8 @@ class Evb(tk.Frame):
     def _loop(self):
         self._diodes()
         self._cpu()
-        self.after(100, self._loop)
+        self._memory()
+        self.after(DELAY_MS, self._loop)
 
 
 def main():
