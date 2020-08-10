@@ -19,6 +19,8 @@ GET_VOLUME_LEVEL = ("amixer -D pulse get Master "
 GET_CPU_USAGE = ("grep 'cpu ' /proc/stat "
     "| awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage \"%\"}'")
 GET_MEMORY_USAGE = "free | grep Mem | awk '{print $3/$2*100}'"
+GET_CPU_TEMPERATURE = ("cat /sys/class/thermal/thermal_zone0/temp "
+	"| awk '{print $0/1000}'")
 
 
 class Host(object):
@@ -68,25 +70,28 @@ class Host(object):
                     self._adjust_volume_level(data)
 
                 elif header == '3':
-                    data = self._get_volume_level()
-                    #print("Dane: {}".format(data))
+                    data = self._get_volume_level()                    
                     msg_len = str(len(data))
                     conn.sendall(msg_len.encode("utf-8"))
                     conn.sendall(data)
 
                 elif header == '4':
-                    data = self._get_cpu_usage()
-                    #print("Dane: {}".format(data))
+                    data = self._get_cpu_usage()                    
                     msg_len = str(len(data))
                     conn.sendall(msg_len.encode("utf-8"))
                     conn.sendall(data)
 
                 elif header == '5':
-                    data = self._get_memory_usage()
-                    #print("Dane: {}".format(data))
+                    data = self._get_memory_usage()                    
                     msg_len = str(len(data))
                     conn.sendall(msg_len.encode("utf-8"))
                     conn.sendall(data)
+                    
+                elif header == '6':
+                    data = self._get_cpu_temperature()
+                    msg_len = str(len(data))
+                    conn.sendall(msg_len.encode("utf-8"))
+                    conn.sendall(data)    
 
                 if not header:
                     break
@@ -120,6 +125,13 @@ class Host(object):
     def _get_memory_usage(self):
         pipe = subprocess.Popen(
             GET_MEMORY_USAGE, shell=True, stdout=subprocess.PIPE).stdout
+        value = pipe.read()
+        value = value.strip()[:5]
+        return value
+        
+    def _get_cpu_temperature(self):
+        pipe = subprocess.Popen(
+            GET_CPU_TEMPERATURE, shell=True, stdout=subprocess.PIPE).stdout
         value = pipe.read()
         value = value.strip()[:5]
         return value

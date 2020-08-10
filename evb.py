@@ -48,7 +48,7 @@ class Evb(tk.Frame):
             master=self.screen, text="CPU: ", font=("", SCREEN_FONT_SIZE),
             bg=SCREEN_COLOR, fg=SCREEN_TEXT_COLOR)
         self.lb_temperature = tk.Label(
-            master=self.screen, text="TEMP: ", font=("", SCREEN_FONT_SIZE),
+            master=self.screen, text="T: ", font=("", SCREEN_FONT_SIZE),
             bg=SCREEN_COLOR, fg=SCREEN_TEXT_COLOR)
         self.lb_memory.grid(row=0, column=0)
         self.lb_cpu.grid(row=0, column=1)
@@ -127,12 +127,17 @@ class Evb(tk.Frame):
         self.lb_memory["text"] = "MEM: {}%".format(value)
 
     def _temperature(self):
-        pass
+        self.sock.sendall(b'6')
+        header = int(self.sock.recv(1))
+        value = self.sock.recv(header).decode()
+
+        self.lb_temperature["text"] = "T: {}".format(value)
         
     def _loop(self):
         self._diodes()
         self._cpu()
         self._memory()
+        self._temperature()
         self.after(DELAY_MS, self._loop)
 
 
