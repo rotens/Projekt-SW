@@ -22,7 +22,9 @@ DIODES_NUM = 8
 BUTTONS_NUM = 8
 MAIN_PADY = 10
 BUTTON_SIZE = 1
+
 DELAY_MS = 1000
+
 
 class Evb(tk.Frame):
     def __init__(self, master, sock):
@@ -106,7 +108,9 @@ class Evb(tk.Frame):
         header = int(self.sock.recv(1))
         value = int(self.sock.recv(header))
 
-        diodes_on = int(value * DIODES_NUM / 100)
+        #diodes_on = int(value * DIODES_NUM / 100)
+        bool_val = int(bool(value))
+        diodes_on = 1*bool_val + int(value * (DIODES_NUM-1) / 100)
         for i in range(diodes_on):
             self.diodes[i]["bg"] = DIODE_ON_COLOR
         for i in range(diodes_on, 8):
@@ -116,21 +120,18 @@ class Evb(tk.Frame):
         self.sock.sendall(b'4')
         header = int(self.sock.recv(1))
         value = self.sock.recv(header).decode()
-
         self.lb_cpu["text"] = "CPU: {}%".format(value)
         
     def _memory(self):
         self.sock.sendall(b'5')
         header = int(self.sock.recv(1))
         value = self.sock.recv(header).decode()
-
         self.lb_memory["text"] = "MEM: {}%".format(value)
 
     def _temperature(self):
         self.sock.sendall(b'6')
         header = int(self.sock.recv(1))
         value = self.sock.recv(header).decode()
-
         self.lb_temperature["text"] = "T: {}".format(value)
         
     def _loop(self):

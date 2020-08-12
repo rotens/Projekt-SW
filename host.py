@@ -10,7 +10,7 @@ import sys
 HOST = '127.0.0.1'
 PORT = 9999
 
-SET_VOLUME_LEVEL = "amixer -D pulse sset Master {}%"
+SET_VOLUME_LEVEL = "amixer -q -D pulse sset Master {}%"
 GET_VOLUME_LEVEL = ("amixer -D pulse get Master "
     "| awk -F 'Left:|[][]' 'BEGIN {RS=\"\"}{ print $3 }'")
 # GET_CPU_USAGE = ("top -b -n2 | grep \"Cpu(s)\" " 
@@ -44,7 +44,7 @@ class Host(object):
         try:
             self.sock.bind((self.host, self.port))
         except OSError:
-            print("Socket juz istnieje")
+            print("Socket already exists")
             sys.exit(1)
 
         self.sock.listen()
@@ -58,7 +58,6 @@ class Host(object):
             while True:
                 header = conn.recv(1)
                 header = header.decode()
-                #print("Header: {}".format(header))
 
                 if header == '1':
                     data = conn.recv(1)
@@ -99,41 +98,52 @@ class Host(object):
     def _shortcut_buttons(self, data):
         data = int(data)
         try:
-            subprocess.call(Host.commands[data], shell=True)
+            subprocess.Popen(Host.commands[data], shell=True)
         except KeyError:
             pass
 
     def _adjust_volume_level(self, data):
-        #print("Volume level {}".format(data.decode()))
         subprocess.call(SET_VOLUME_LEVEL.format(data.decode()), shell=True)
 
     def _get_volume_level(self):
         pipe = subprocess.Popen(
             GET_VOLUME_LEVEL, shell=True, stdout=subprocess.PIPE).stdout
         value = pipe.read()
+        if not value:
+            return b'0'
         value = value.strip()
         value = value[:len(value)-1]
+
         return value
 
     def _get_cpu_usage(self):
         pipe = subprocess.Popen(
             GET_CPU_USAGE, shell=True, stdout=subprocess.PIPE).stdout
         value = pipe.read()
+        if not value:
+            return b'0'
         value = value.strip()[:5]
+
         return value
 
     def _get_memory_usage(self):
         pipe = subprocess.Popen(
             GET_MEMORY_USAGE, shell=True, stdout=subprocess.PIPE).stdout
         value = pipe.read()
+        if not value:
+            return b'0'
         value = value.strip()[:5]
+
         return value
         
     def _get_cpu_temperature(self):
         pipe = subprocess.Popen(
             GET_CPU_TEMPERATURE, shell=True, stdout=subprocess.PIPE).stdout
         value = pipe.read()
+        if not value:
+            return b'0'
         value = value.strip()[:5]
+
         return value
 
 

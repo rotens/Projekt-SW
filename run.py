@@ -1,8 +1,11 @@
-import os
+#!/usr/bin/env python3
+#-*- coding: utf-8 -*-
+
+import subprocess
 
 def main():
-    os.popen("python3 host.py")
-    os.popen("python3 evb.py")
+    subprocess.Popen("python3 host.py", shell=True)
+    subprocess.Popen("python3 evb.py", shell=True).wait()
 
 if __name__ == "__main__":
     main()
