@@ -80,17 +80,33 @@ class Host(object):
                     conn.sendall(msg_len.encode("utf-8"))
                     conn.sendall(data)
 
-                elif header == '5':
                     data = self._get_memory_usage()                    
                     msg_len = str(len(data))
                     conn.sendall(msg_len.encode("utf-8"))
                     conn.sendall(data)
                     
-                elif header == '6':
                     data = self._get_cpu_temperature()
                     msg_len = str(len(data))
                     conn.sendall(msg_len.encode("utf-8"))
-                    conn.sendall(data)    
+                    conn.sendall(data)
+
+                # elif header == '4':
+                #     data = self._get_cpu_usage()                    
+                #     msg_len = str(len(data))
+                #     conn.sendall(msg_len.encode("utf-8"))
+                #     conn.sendall(data)
+
+                # elif header == '5':
+                #     data = self._get_memory_usage()                    
+                #     msg_len = str(len(data))
+                #     conn.sendall(msg_len.encode("utf-8"))
+                #     conn.sendall(data)
+                    
+                # elif header == '6':
+                #     data = self._get_cpu_temperature()
+                #     msg_len = str(len(data))
+                #     conn.sendall(msg_len.encode("utf-8"))
+                #     conn.sendall(data)    
 
                 if not header:
                     break
@@ -122,7 +138,8 @@ class Host(object):
         value = pipe.read()
         if not value:
             return b'0'
-        value = value.strip()[:5]
+        dot_index = value.index(b'.')
+        value = value.strip()[:dot_index+2]
 
         return value
 
@@ -132,7 +149,8 @@ class Host(object):
         value = pipe.read()
         if not value:
             return b'0'
-        value = value.strip()[:5]
+        dot_index = value.index(b'.')
+        value = value.strip()[:dot_index+2]
 
         return value
         

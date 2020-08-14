@@ -116,29 +116,46 @@ class Evb(tk.Frame):
         for i in range(diodes_on, 8):
             self.diodes[i]["bg"] = DIODE_OFF_COLOR
 
-    def _cpu(self):
+    # def _cpu(self):
+    #     self.sock.sendall(b'4')
+    #     header = int(self.sock.recv(1))
+    #     value = self.sock.recv(header).decode()
+    #     self.lb_cpu["text"] = "CPU: {}%".format(value)
+        
+    # def _memory(self):
+    #     self.sock.sendall(b'5')
+    #     header = int(self.sock.recv(1))
+    #     value = self.sock.recv(header).decode()
+    #     self.lb_memory["text"] = "MEM: {}%".format(value)
+
+    # def _temperature(self):
+    #     self.sock.sendall(b'6')
+    #     header = int(self.sock.recv(1))
+    #     value = self.sock.recv(header).decode()
+    #     self.lb_temperature["text"] = "T: {}".format(value)
+
+    def _screen(self):
         self.sock.sendall(b'4')
+
         header = int(self.sock.recv(1))
         value = self.sock.recv(header).decode()
         self.lb_cpu["text"] = "CPU: {}%".format(value)
-        
-    def _memory(self):
-        self.sock.sendall(b'5')
+
         header = int(self.sock.recv(1))
         value = self.sock.recv(header).decode()
         self.lb_memory["text"] = "MEM: {}%".format(value)
-
-    def _temperature(self):
-        self.sock.sendall(b'6')
+        
         header = int(self.sock.recv(1))
         value = self.sock.recv(header).decode()
         self.lb_temperature["text"] = "T: {}".format(value)
+
         
     def _loop(self):
         self._diodes()
-        self._cpu()
-        self._memory()
-        self._temperature()
+        self._screen()
+        # self._cpu()
+        # self._memory()
+        # self._temperature()
         self.after(DELAY_MS, self._loop)
 
 
