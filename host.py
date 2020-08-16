@@ -19,8 +19,8 @@ GET_VOLUME_LEVEL = ("amixer -D pulse get Master "
 GET_CPU_USAGE = ("grep 'cpu ' /proc/stat "
     "| awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage \"%\"}'")
 GET_MEMORY_USAGE = "free | grep Mem | awk '{print $3/$2*100}'"
-GET_CPU_TEMPERATURE = ("cat /sys/class/thermal/thermal_zone0/temp "
-	"| awk '{print $0/1000}'")
+GET_CPU_TEMPERATURE = ("cat /sys/class/thermal/thermal_zone*/temp "
+	"| awk 'END{print $0/1000}'")
 
 
 class Host(object):
