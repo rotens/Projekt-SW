@@ -33,7 +33,7 @@ class Evb(tk.Frame):
         self.sock = sock
         self.pack()
 
-        self.lb_screen = tk.Label(master=self, text="LCD HD44780")
+        self.lb_screen = tk.Label(master=self, text="LCD screen")
         self.lb_screen.grid(row=0, columnspan=DIODES_NUM)
         self.screen = tk.Frame(
             master=self, height=SCREEN_HEIGHT, width=SCREEN_WIDTH, 
@@ -74,7 +74,7 @@ class Evb(tk.Frame):
         self.potentiometer["command"] = lambda x: self._potentiometer()
         self.potentiometer.grid(row=5, columnspan=DIODES_NUM)
 
-        self.lb_buttons = tk.Label(master=self, text="Shortcuts")
+        self.lb_buttons = tk.Label(master=self, text="Buttons")
         self.lb_buttons.grid(row=6, columnspan=DIODES_NUM)
         self.buttons = []
         for i in range(BUTTONS_NUM):
@@ -108,31 +108,12 @@ class Evb(tk.Frame):
         header = int(self.sock.recv(1))
         value = int(self.sock.recv(header))
 
-        #diodes_on = int(value * DIODES_NUM / 100)
         bool_val = int(bool(value))
         diodes_on = 1*bool_val + int(value * (DIODES_NUM-1) / 100)
         for i in range(diodes_on):
             self.diodes[i]["bg"] = DIODE_ON_COLOR
         for i in range(diodes_on, 8):
             self.diodes[i]["bg"] = DIODE_OFF_COLOR
-
-    # def _cpu(self):
-    #     self.sock.sendall(b'4')
-    #     header = int(self.sock.recv(1))
-    #     value = self.sock.recv(header).decode()
-    #     self.lb_cpu["text"] = "CPU: {}%".format(value)
-        
-    # def _memory(self):
-    #     self.sock.sendall(b'5')
-    #     header = int(self.sock.recv(1))
-    #     value = self.sock.recv(header).decode()
-    #     self.lb_memory["text"] = "MEM: {}%".format(value)
-
-    # def _temperature(self):
-    #     self.sock.sendall(b'6')
-    #     header = int(self.sock.recv(1))
-    #     value = self.sock.recv(header).decode()
-    #     self.lb_temperature["text"] = "T: {}".format(value)
 
     def _screen(self):
         self.sock.sendall(b'4')

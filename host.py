@@ -13,9 +13,6 @@ PORT = 9999
 SET_VOLUME_LEVEL = "amixer -q -D pulse sset Master {}%"
 GET_VOLUME_LEVEL = ("amixer -D pulse get Master "
     "| awk -F 'Left:|[][]' 'BEGIN {RS=\"\"}{ print $3 }'")
-# GET_CPU_USAGE = ("top -b -n2 | grep \"Cpu(s)\" " 
-#     "| awk '{print $2+$4 \"%\"}' | tail -n1")
-
 GET_CPU_USAGE = ("grep 'cpu ' /proc/stat "
     "| awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage \"%\"}'")
 GET_MEMORY_USAGE = "free | grep Mem | awk '{print $3/$2*100}'"
@@ -44,7 +41,7 @@ class Host(object):
         try:
             self.sock.bind((self.host, self.port))
         except OSError:
-            print("Socket already exists")
+            print("Socket already exists. Wait one minute and try again.")
             sys.exit(1)
 
         self.sock.listen()
@@ -88,25 +85,7 @@ class Host(object):
                     data = self._get_cpu_temperature()
                     msg_len = str(len(data))
                     conn.sendall(msg_len.encode("utf-8"))
-                    conn.sendall(data)
-
-                # elif header == '4':
-                #     data = self._get_cpu_usage()                    
-                #     msg_len = str(len(data))
-                #     conn.sendall(msg_len.encode("utf-8"))
-                #     conn.sendall(data)
-
-                # elif header == '5':
-                #     data = self._get_memory_usage()                    
-                #     msg_len = str(len(data))
-                #     conn.sendall(msg_len.encode("utf-8"))
-                #     conn.sendall(data)
-                    
-                # elif header == '6':
-                #     data = self._get_cpu_temperature()
-                #     msg_len = str(len(data))
-                #     conn.sendall(msg_len.encode("utf-8"))
-                #     conn.sendall(data)    
+                    conn.sendall(data)  
 
                 if not header:
                     break
