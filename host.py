@@ -103,11 +103,9 @@ class Host(object):
     def _get_volume_level(self):
         pipe = subprocess.Popen(
             GET_VOLUME_LEVEL, shell=True, stdout=subprocess.PIPE).stdout
-        
         value = pipe.read()
         if not value:
             return b'0'
-
         value = value.strip()
         value = value[:len(value)-1]
 
@@ -116,11 +114,9 @@ class Host(object):
     def _get_cpu_usage(self):
         pipe = subprocess.Popen(
             GET_CPU_USAGE, shell=True, stdout=subprocess.PIPE).stdout
-
         value = pipe.read()
         if not value:
             return b'0'
-
         dot_index = value.index(b'.')
         value = value.strip()[:dot_index+2]
 
@@ -129,11 +125,9 @@ class Host(object):
     def _get_memory_usage(self):
         pipe = subprocess.Popen(
             GET_MEMORY_USAGE, shell=True, stdout=subprocess.PIPE).stdout
-
         value = pipe.read()
         if not value:
             return b'0'
-
         dot_index = value.index(b'.')
         value = value.strip()[:dot_index+2]
 
@@ -142,11 +136,9 @@ class Host(object):
     def _get_cpu_temperature(self):
         pipe = subprocess.Popen(
             GET_CPU_TEMPERATURE, shell=True, stdout=subprocess.PIPE).stdout
-            
         value = pipe.read()
         if not value:
             return b'0'
-
         value = value.strip()[:5]
 
         return value
