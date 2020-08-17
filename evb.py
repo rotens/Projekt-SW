@@ -5,6 +5,7 @@ import socket
 import sys
 import tkinter as tk
 
+
 HOST = '127.0.0.1'
 PORT = 9999
 
@@ -134,15 +135,13 @@ class Evb(tk.Frame):
     def _loop(self):
         self._diodes()
         self._screen()
-        # self._cpu()
-        # self._memory()
-        # self._temperature()
         self.after(DELAY_MS, self._loop)
 
 
 def main():
     root = tk.Tk()
     root.title("EvB 5.1 v5 emulator")
+    root.resizable(False, False)
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         Evb(root, s).mainloop()
 

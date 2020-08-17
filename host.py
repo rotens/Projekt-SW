@@ -25,7 +25,7 @@ class Host(object):
         0: "firefox",
         1: "vim",
         2: "shutdown now",
-        3: "shutdown -r",
+        3: "shutdown -r now",
         4: "systemctl suspend",
         5: "firefox https://www.github.com",
         6: "firefox https://www.pk.edu.pl",
@@ -106,6 +106,7 @@ class Host(object):
         value = pipe.read()
         if not value:
             return b'0'
+
         value = value.strip()
         value = value[:len(value)-1]
 
@@ -117,6 +118,7 @@ class Host(object):
         value = pipe.read()
         if not value:
             return b'0'
+
         dot_index = value.index(b'.')
         value = value.strip()[:dot_index+2]
 
@@ -128,6 +130,7 @@ class Host(object):
         value = pipe.read()
         if not value:
             return b'0'
+
         dot_index = value.index(b'.')
         value = value.strip()[:dot_index+2]
 
@@ -139,6 +142,7 @@ class Host(object):
         value = pipe.read()
         if not value:
             return b'0'
+
         value = value.strip()[:5]
 
         return value
