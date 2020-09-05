@@ -11,12 +11,15 @@ HOST = '127.0.0.1'
 PORT = 9999
 
 SET_VOLUME_LEVEL = "amixer -q -D pulse sset Master {}%"
-GET_VOLUME_LEVEL = ("amixer -D pulse get Master "
+GET_VOLUME_LEVEL = (
+    "amixer -D pulse get Master "
     "| awk -F 'Left:|[][]' 'BEGIN {RS=\"\"}{ print $3 }'")
-GET_CPU_USAGE = ("grep 'cpu ' /proc/stat "
+GET_CPU_USAGE = (
+    "grep 'cpu ' /proc/stat "
     "| awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage \"%\"}'")
 GET_MEMORY_USAGE = "free | grep Mem | awk '{print $3/$2*100}'"
-GET_CPU_TEMPERATURE = ("cat /sys/class/thermal/thermal_zone*/temp "
+GET_CPU_TEMPERATURE = (
+    "cat /sys/class/thermal/thermal_zone*/temp "
 	"| awk 'END{print $0/1000}'")
 
 
